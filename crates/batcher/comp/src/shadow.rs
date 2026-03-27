@@ -86,7 +86,7 @@ impl CompressorWriter for ShadowCompressor {
             if newbound > self.config.target_output_size {
                 self.is_full = true;
                 // Only error if the buffer has been written to.
-                if self.compressor.len() > 0 {
+                if !self.compressor.is_empty() {
                     return Err(CompressorError::Full);
                 }
             }
