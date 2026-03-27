@@ -3,8 +3,14 @@
 use crate::errors::{IOError, IOResult};
 
 /// Converts a return value from a syscall into a [`IOResult`] type.
+///
+/// Only referenced from MIPS64/RISC-V syscall code; other targets compile this crate without
+/// calling it (unit tests still exercise it under `cfg(test)`).
 #[inline(always)]
-#[allow(unused)]
+#[cfg_attr(
+    not(any(target_arch = "mips64", target_arch = "riscv64")),
+    allow(dead_code)
+)]
 pub(crate) const fn from_ret(value: usize) -> IOResult<usize> {
     if value > -4096isize as usize {
         // Truncation of the error value is guaranteed to never occur due to
