@@ -208,7 +208,6 @@ mod tests {
     use super::*;
 
     struct FrameValidityTestCase {
-        #[allow(dead_code)]
         name: String,
         frames: Vec<Frame>,
         should_error: Vec<bool>,
@@ -217,31 +216,40 @@ mod tests {
     }
 
     fn run_frame_validity_test(test_case: FrameValidityTestCase) {
-        // #[cfg(feature = "std")]
-        // println!("Running test: {}", test_case.name);
-
         let id = [0xFF; 16];
         let block = BlockInfo::default();
         let mut channel = Channel::new(id, block);
+        let case = test_case.name.as_str();
 
         if test_case.frames.len() != test_case.should_error.len()
             || test_case.frames.len() != test_case.sizes.len()
         {
-            panic!("Test case length mismatch");
+            panic!("test case length mismatch (case={case})");
         }
 
         for (i, frame) in test_case.frames.iter().enumerate() {
             let result = channel.add_frame(frame.clone(), block);
             if test_case.should_error[i] {
-                assert!(result.is_err());
+                assert!(
+                    result.is_err(),
+                    "case={case}: frame index {i} expected Err, got {result:?}"
+                );
             } else {
-                assert!(result.is_ok());
+                assert!(result.is_ok(), "case={case}: frame index {i} expected Ok, got {result:?}");
             }
-            assert_eq!(channel.size(), test_case.sizes[i] as usize);
+            assert_eq!(
+                channel.size(),
+                test_case.sizes[i] as usize,
+                "case={case}: frame index {i} channel.size mismatch"
+            );
         }
 
         if let Some(frame_data) = test_case.frame_data {
-            assert_eq!(channel.frame_data().unwrap(), frame_data);
+            assert_eq!(
+                channel.frame_data().unwrap(),
+                frame_data,
+                "case={case}: frame_data mismatch"
+            );
         }
     }
 
